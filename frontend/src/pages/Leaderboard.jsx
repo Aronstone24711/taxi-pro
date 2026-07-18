@@ -10,7 +10,10 @@ export default function Leaderboard() {
   const { user } = useAuth();
 
   useEffect(() => {
-    api.get("/leaderboard").then(({ data }) => setRows(data.leaderboard || [])).finally(() => setLoading(false));
+    api.get("/leaderboard")
+      .then(({ data }) => setRows(data.leaderboard || []))
+      .catch((err) => console.warn("[taxquest] load leaderboard failed:", err?.message || err))
+      .finally(() => setLoading(false));
   }, []);
 
   return (

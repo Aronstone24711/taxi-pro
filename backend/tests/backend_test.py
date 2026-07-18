@@ -12,14 +12,21 @@ import os
 import time
 import uuid
 import urllib.parse
+from pathlib import Path
+
 import pytest
 import requests
+from dotenv import load_dotenv
+
+# Load backend env for admin credentials — never hardcode secrets in source.
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 BASE_URL = os.environ["REACT_APP_BACKEND_URL"].rstrip("/") if os.environ.get("REACT_APP_BACKEND_URL") else "https://tax-pro-hub-14.preview.emergentagent.com"
 API = f"{BASE_URL}/api"
 
-ADMIN_EMAIL = "admin@taxmaster.pro"
-ADMIN_PASSWORD = "Admin@123"
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@taxmaster.pro")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD")
+assert ADMIN_PASSWORD, "ADMIN_PASSWORD must be set (via backend/.env or env var) — never hardcode"
 
 
 # ---------- Fixtures ----------

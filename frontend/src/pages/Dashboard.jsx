@@ -40,8 +40,12 @@ export default function Dashboard() {
   const [greeting] = useState(() => greetings[Math.floor(Math.random() * greetings.length)]);
 
   useEffect(() => {
-    api.get("/user/history").then(({ data }) => setHistory(data.history || [])).catch(() => {});
-    api.get("/achievements/list").then(({ data }) => setAchievements(data.achievements || [])).catch(() => {});
+    api.get("/user/history")
+      .then(({ data }) => setHistory(data.history || []))
+      .catch((err) => console.warn("[taxquest] load history failed:", err?.message || err));
+    api.get("/achievements/list")
+      .then(({ data }) => setAchievements(data.achievements || []))
+      .catch((err) => console.warn("[taxquest] load achievements failed:", err?.message || err));
   }, []);
 
   const accuracy = user?.questions_answered
@@ -100,8 +104,8 @@ export default function Dashboard() {
               <div className="text-sm text-slate-500 py-6 text-center">No quiz attempts yet. Start with the Indian Quiz →</div>
             ) : (
               <div className="divide-y divide-slate-100">
-                {history.slice(0, 8).map((h, i) => (
-                  <div key={i} className="py-3 flex items-center justify-between text-sm">
+                {history.slice(0, 8).map((h) => (
+                  <div key={`${h.timestamp}-${h.quiz_type}-${h.country_key || "in"}`} className="py-3 flex items-center justify-between text-sm">
                     <div>
                       <div className="font-medium">{h.quiz_type === "country" ? h.country_key : "Indian Quiz"}</div>
                       <div className="text-slate-400 text-xs">{new Date(h.timestamp).toLocaleString()}</div>

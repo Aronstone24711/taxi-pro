@@ -29,7 +29,9 @@ export default function IndianQuiz() {
   const { setUser } = useAuth();
 
   useEffect(() => {
-    api.get("/quiz/indian").then(({ data }) => setPool(shuffle(data.quiz))).catch(() => {});
+    api.get("/quiz/indian")
+      .then(({ data }) => setPool(shuffle(data.quiz)))
+      .catch((err) => console.warn("[taxquest] load Indian quiz failed:", err?.message || err));
   }, []);
 
   const q = pool[idx];
@@ -43,7 +45,9 @@ export default function IndianQuiz() {
         streak: newStreak,
       });
       setUser(data);
-    } catch {}
+    } catch (err) {
+      console.warn("[taxquest] submit progress failed:", err?.message || err);
+    }
   };
 
   const pick = async (i) => {
@@ -114,7 +118,7 @@ export default function IndianQuiz() {
                     else if (i === picked) cls += " incorrect";
                   }
                   return (
-                    <button key={i} data-testid={`quiz-opt-${i}`} disabled={answered} onClick={() => pick(i)} className={cls}>
+                    <button key={`${q.q}-${i}`} data-testid={`quiz-opt-${i}`} disabled={answered} onClick={() => pick(i)} className={cls}>
                       <span className="font-mono text-slate-400 mr-2">{String.fromCharCode(65 + i)}.</span>{opt}
                     </button>
                   );

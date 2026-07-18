@@ -10,7 +10,11 @@ export default function WorldExplorer() {
   const [region, setRegion] = useState("");
   const [selected, setSelected] = useState(null);
 
-  useEffect(() => { api.get("/countries").then(({ data }) => setCountries(data.countries || [])); }, []);
+  useEffect(() => {
+    api.get("/countries")
+      .then(({ data }) => setCountries(data.countries || []))
+      .catch((err) => console.warn("[taxquest] load countries failed:", err?.message || err));
+  }, []);
 
   const regions = useMemo(() => Array.from(new Set(countries.map(c => c.region).filter(Boolean))).sort(), [countries]);
   const filtered = useMemo(() => {
@@ -109,7 +113,9 @@ function CountryView({ country, onBack }) {
           streak: 0,
         });
         setUser(data);
-      } catch {}
+      } catch (err) {
+        console.warn("[taxquest] country quiz submit failed:", err?.message || err);
+      }
       setPhase("complete");
     } else {
       setIdx(i => i + 1); setAnswered(false); setPicked(null);
@@ -170,7 +176,7 @@ function CountryView({ country, onBack }) {
                   else if (i === picked) cls += " incorrect";
                 }
                 return (
-                  <button key={i} data-testid={`cq-opt-${i}`} disabled={answered} onClick={() => pick(i)} className={cls}>
+                  <button key={`${q.q}-${i}`} data-testid={`cq-opt-${i}`} disabled={answered} onClick={() => pick(i)} className={cls}>
                     <span className="font-mono text-slate-400 mr-2">{String.fromCharCode(65 + i)}.</span>{opt}
                   </button>
                 );

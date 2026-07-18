@@ -108,7 +108,7 @@ export default function AdminPanel() {
               </div>
               <div>
                 <label className="tm-label">Notes</label>
-                <textarea className="tm-input min-h-[80px]" value={editing.notes}
+                <textarea data-testid="admin-notes" className="tm-input min-h-[80px]" value={editing.notes}
                   onChange={e => setEditing({ ...editing, notes: e.target.value })} />
               </div>
 
@@ -120,7 +120,7 @@ export default function AdminPanel() {
                 </div>
                 <div className="space-y-3 max-h-[300px] overflow-y-auto tm-scroll pr-2">
                   {editing.quiz.map((quiz, qi) => (
-                    <div key={qi} className="rounded-lg border border-slate-200 p-3">
+                    <div key={`q-${qi}-${(quiz.q || "").slice(0, 24)}`} className="rounded-lg border border-slate-200 p-3">
                       <div className="flex items-center gap-2 mb-2">
                         <div className="text-xs font-mono text-slate-500">Q{qi + 1}</div>
                         <button onClick={() => setEditing({ ...editing, quiz: editing.quiz.filter((_, i) => i !== qi) })}
@@ -130,7 +130,7 @@ export default function AdminPanel() {
                         onChange={e => { const q = [...editing.quiz]; q[qi].q = e.target.value; setEditing({ ...editing, quiz: q }); }} />
                       <div className="grid grid-cols-2 gap-2 mb-2">
                         {quiz.opts.map((opt, oi) => (
-                          <div key={oi} className="flex items-center gap-1.5">
+                          <div key={`opt-${qi}-${oi}`} className="flex items-center gap-1.5">
                             <input type="radio" name={`c-${qi}`} checked={quiz.correct === oi}
                               onChange={() => { const q = [...editing.quiz]; q[qi].correct = oi; setEditing({ ...editing, quiz: q }); }} />
                             <input className="tm-input flex-1 text-sm" value={opt}

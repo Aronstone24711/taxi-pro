@@ -16,7 +16,7 @@ export default function Chatbot() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [messages, setMessages] = useState([
-    { role: "assistant", content: "Hi! I'm TaxQuest AI. Ask me anything about taxes, deductions, or filing." },
+    { id: "hello", role: "assistant", content: "Hi! I'm TaxQuest AI. Ask me anything about taxes, deductions, or filing." },
   ]);
   const [session, setSession] = useState(null);
   const scrollRef = useRef(null);
@@ -31,7 +31,13 @@ export default function Chatbot() {
     if (!text.trim() || busy) return;
     setBusy(true);
     setInput("");
-    setMessages((m) => [...m, { role: "user", content: text }, { role: "assistant", content: "" }]);
+    const userId = `u-${Date.now()}`;
+    const asstId = `a-${Date.now()}`;
+    setMessages((m) => [
+      ...m,
+      { id: userId, role: "user", content: text },
+      { id: asstId, role: "assistant", content: "" },
+    ]);
     try {
       const token = getToken();
       const res = await fetch(`${API_BASE}/chat/stream`, {
@@ -118,7 +124,7 @@ export default function Chatbot() {
 
           <div ref={scrollRef} className="flex-1 overflow-y-auto tm-scroll px-4 py-4 space-y-3 bg-slate-50">
             {messages.map((m, i) => (
-              <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+              <div key={m.id || `msg-${i}`} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div className={`max-w-[85%] rounded-xl px-3 py-2 text-[13.5px] leading-relaxed whitespace-pre-wrap ${m.role === "user" ? "bg-[#2563eb] text-white" : "bg-white border border-slate-200 text-slate-800"}`}>
                   {m.content || (busy && i === messages.length - 1 ? <span className="opacity-60">Thinking…</span> : null)}
                 </div>

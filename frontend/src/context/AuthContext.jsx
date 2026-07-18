@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
 import { api, formatApiError, setToken, getToken } from "@/lib/api";
 
 const AuthContext = createContext(null);
@@ -8,7 +8,6 @@ export function AuthProvider({ children }) {
   const [error, setError] = useState("");
 
   const refresh = useCallback(async () => {
-    // Skip the call entirely if we have neither a token nor any cookies for the domain.
     const hasToken = !!getToken();
     if (!hasToken && typeof document !== "undefined" && !document.cookie) {
       setUser(false);
@@ -16,17 +15,23 @@ export function AuthProvider({ children }) {
     }
     try {
       const { data } = await api.get("/auth/me", { validateStatus: (s) => s < 500 });
-      if (data && data.email) setUser(data);
-      else { setToken(null); setUser(false); }
-    } catch {
+      if (data && data.email) {
+        setUser(data);
+      } else {
+        setToken(null);
+        setUser(false);
+      }
+    } catch (err) {
+      // Network/timeout — clear stale token and drop to logged-out state.
+      console.warn("[taxquest] /auth/me failed:", err?.message || err);
       setToken(null);
       setUser(false);
     }
-  }, []);
+  }, []); // deps are all module-level or stable setters — intentionally empty
 
   useEffect(() => { refresh(); }, [refresh]);
 
-  const login = async (email, password) => {
+  const login = useCallback(async (email, password) => {
     setError("");
     try {
       const { data } = await api.post("/auth/login", { email, password });
@@ -35,12 +40,13 @@ export function AuthProvider({ children }) {
       return { ok: true };
     } catch (e) {
       const msg = formatApiError(e);
+      console.warn("[taxquest] login failed:", msg);
       setError(msg);
       return { ok: false, error: msg };
     }
-  };
+  }, []);
 
-  const register = async (email, password, name, extras = {}) => {
+  const register = useCallback(async (email, password, name, extras = {}) => {
     setError("");
     try {
       const { data } = await api.post("/auth/register", { email, password, name, ...extras });
@@ -49,22 +55,29 @@ export function AuthProvider({ children }) {
       return { ok: true };
     } catch (e) {
       const msg = formatApiError(e);
+      console.warn("[taxquest] register failed:", msg);
       setError(msg);
       return { ok: false, error: msg };
     }
-  };
+  }, []);
 
-  const logout = async () => {
-    try { await api.post("/auth/logout"); } catch {}
+  const logout = useCallback(async () => {
+    try {
+      await api.post("/auth/logout");
+    } catch (err) {
+      console.warn("[taxquest] logout API failed (ignored):", err?.message || err);
+    }
     setToken(null);
     setUser(false);
-  };
+  }, []);
 
-  return (
-    <AuthContext.Provider value={{ user, error, login, register, logout, refreshUser: refresh, setUser }}>
-      {children}
-    </AuthContext.Provider>
+  // Memoize context value to prevent unnecessary re-renders in consumers.
+  const value = useMemo(
+    () => ({ user, error, login, register, logout, refreshUser: refresh, setUser }),
+    [user, error, login, register, logout, refresh]
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export const useAuth = () => useContext(AuthContext);
