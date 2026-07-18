@@ -34,6 +34,7 @@ from auth import (
 )
 from tax_data import COUNTRIES, INDIAN_QUIZ
 from chat_service import stream_reply, new_session_id
+from quiz_gen import generate_questions
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -81,6 +82,12 @@ class ChatIn(BaseModel):
     message: str
     country: Optional[str] = None
     session_id: Optional[str] = None
+
+
+class QuizGenIn(BaseModel):
+    topic: str = Field(default="Indian income tax, GST and deductions", max_length=200)
+    level: Optional[str] = "beginner"
+    count: Optional[int] = 5
 
 
 # ---------- Auth dep ----------
@@ -362,6 +369,32 @@ async def leaderboard(limit: int = Query(20, ge=1, le=100)):
     return {"leaderboard": users}
 
 
+@api.get("/stats")
+async def public_stats():
+    """Global counters shown at the top of the Leaderboard page."""
+    total_users = await db.users.count_documents({"role": {"$ne": "admin"}})
+    active_users = await db.users.count_documents({"total_score": {"$gt": 0}})
+    total_attempts = await db.quiz_attempts.count_documents({})
+    total_questions_answered = 0
+    total_correct = 0
+    async for u in db.users.find({"role": {"$ne": "admin"}}, {"questions_answered": 1, "correct_answers": 1}):
+        total_questions_answered += u.get("questions_answered", 0)
+        total_correct += u.get("correct_answers", 0)
+
+    india_champs = await db.quiz_attempts.distinct("user_id", {"quiz_type": "indian"})
+    world_explorers = await db.quiz_attempts.distinct("user_id", {"quiz_type": "country"})
+
+    return {
+        "global_learners": total_users,
+        "active_learners": active_users,
+        "india_quiz_champs": len(india_champs),
+        "world_explorers": len(world_explorers),
+        "total_attempts": total_attempts,
+        "total_questions": total_questions_answered,
+        "total_correct": total_correct,
+    }
+
+
 @api.get("/user/history")
 async def my_history(user: dict = Depends(current_user), limit: int = 20):
     cursor = db.quiz_attempts.find(
@@ -399,6 +432,20 @@ async def chat_stream(payload: ChatIn, user: dict = Depends(current_user)):
             "X-Session-Id": session_id,
         },
     )
+
+
+@api.post("/quiz/generate")
+async def quiz_generate(payload: QuizGenIn, user: dict = Depends(current_user)):
+    """Generate fresh quiz questions on-demand using Claude Sonnet 4.5.
+    Requires auth (LLM costs). Returns up to 8 validated questions."""
+    try:
+        questions = await generate_questions(payload.topic, payload.level or "beginner", payload.count or 5)
+    except Exception as e:
+        logger.exception("quiz generation failed")
+        raise HTTPException(status_code=502, detail=f"AI generator error: {str(e)[:120]}")
+    if not questions:
+        raise HTTPException(status_code=502, detail="AI returned no valid questions — please try again.")
+    return {"questions": questions, "count": len(questions)}
 
 
 # ---------- Startup ----------

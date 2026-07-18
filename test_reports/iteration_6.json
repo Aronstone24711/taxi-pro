@@ -1,0 +1,57 @@
+{
+  "summary": "Iteration 6 — Backend PASS (30/30 pytest). Leaderboard UI + new /api/stats endpoint + /api/quiz/generate (Claude Sonnet 4.5) all verified server-side. Frontend has a CRITICAL blocker: /quiz page is completely blank (React ErrorBoundary trips) because IndianQuiz.jsx references undeclared state variables `generating`, `setGenerating`, `aiCount`, `setAiCount` — the `useState` hooks were never added. This crashes the page for BOTH guest and authenticated users, blocking the Indian Quiz, the new AI Quiz Generator feature, quiz submission, and any downstream leaderboard population from the UI. All other pages (Landing, Explorer, Save Smart, Leaderboard, Login, Dashboard) render fine and the leaderboard shows the four new stat cards + renamed columns exactly as spec'd.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "/api/leaderboard", "issue": "PRD claimed 'empty after reset' — but previous backend regression suite creates real quiz submissions (TestQuiz.test_leaderboard_reflects_submitted_user, TestBearerFallback.test_quiz_submit_with_only_bearer, TestQuiz.test_submit_quiz_updates_stats_and_achievements + new TestStats.test_stats_updates_after_submit). So after any pytest run the LB has 3-4 QA users. This is expected/desired for regression coverage, but if a truly empty-state screenshot is needed the DB must be re-cleaned AFTER pytest, not before."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "IndianQuiz.jsx (/quiz page)",
+        "issue": "PAGE ERROR: 'aiCount is not defined' — component crashes and renders blank. Root cause: `generating`, `setGenerating`, `aiCount`, `setAiCount` are referenced (lines 93, 105, 111, 194, 212, 215) but the useState hooks were never declared alongside the other state at the top of the component (only pool, idx, score, streak, best, answered, picked, confettiKey, flash are declared). This is a straight missing-declaration bug from the iteration_6 edits that added the 'Generate more with AI' card.",
+        "selector": "/quiz — [data-testid='quiz-gen-more'], [data-testid='quiz-gen-signin'], MiniRow 'AI questions in pool'",
+        "priority": "CRITICAL — blocks ALL primary features of this iteration (AI Quiz Generator) plus the entire pre-existing Indian Quiz flow (guest browsing, admin quiz submission, leaderboard population from UI)."
+      }
+    ],
+    "integration_issues": [
+      {
+        "flow": "AI Quiz Generator (POST /api/quiz/generate) UI integration",
+        "issue": "Cannot be exercised via the browser because /quiz is blank. Backend endpoint itself works — verified with a real Claude Sonnet 4.5 call (topic='GST', count=3) returning schema-valid {questions:[…], count:3} in <10s.",
+        "affected_selectors": ["[data-testid='quiz-gen-more']", "[data-testid='quiz-gen-signin']"]
+      }
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/backend/tests/test_stats_and_quizgen.py",
+    "/app/test_reports/pytest/iteration_6.xml",
+    "/app/test_reports/pytest/iteration_6_new.xml"
+  ],
+  "action_items": [
+    "URGENT: In /app/frontend/src/pages/IndianQuiz.jsx add two missing useState lines near the other state (~line 29): `const [generating, setGenerating] = useState(false);` and `const [aiCount, setAiCount] = useState(0);` — this single fix unblocks the /quiz page and the entire iteration_6 AI Quiz Generator feature.",
+    "After fix, re-verify: (a) /quiz renders as guest with sidebar 'Sign in to unlock' [data-testid=quiz-gen-signin] linking to /login; (b) /quiz as admin renders 'Generate more with AI' button [data-testid=quiz-gen-more]; clicking it hits POST /api/quiz/generate and appends 5 questions with 'AI question' badge; (c) answering a couple questions increases /api/stats.total_questions and adds the admin to /api/leaderboard row.",
+    "(minor) If a pristine empty-state Leaderboard screenshot is desired, re-clean quiz_attempts + reset user counters AFTER the pytest suite has run — otherwise QA-created rows will remain."
+  ],
+  "critical_code_review_comments": [
+    "IndianQuiz.jsx — missing useState declarations (see ui_bugs). This kind of ReferenceError should be catchable by ESLint react/no-undef; recommend adding a lint step in CI so a shipped hook-less state var never reaches preview again.",
+    "server.py /api/stats aggregates user progress with an async cursor iteration; fine at current scale but could be replaced with a single db.users.aggregate([{$match:{role:{$ne:'admin'}}},{$group:{_id:null,q:{$sum:'$questions_answered'},c:{$sum:'$correct_answers'}}}]) for O(1) round-trips at larger user counts.",
+    "server.py leaderboard filter `{'total_score': {'$gt': 0}}` correctly hides zero-score admin, matching the intended 'no players yet' UX when DB is empty.",
+    "quiz_gen.py — good defensive JSON salvage + validation. Consider capping question length (currently no strict char check on output — the prompt requests <160 but the validator doesn't enforce it). Also: the LLM call uses a fresh session_id every request which is correct (no context leak), and count is properly clamped 1..8."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_stats_and_quizgen.py (NEW — 3 tests for /stats + /quiz/generate)"
+  ],
+  "success_rate": {
+    "backend": "100% (30/30 pytest — 26 pre-existing + 4 new)",
+    "frontend": "~70% — Landing / Explorer / Save Smart / Leaderboard / Login / Dashboard all OK; /quiz page 100% broken (blank due to ReferenceError)"
+  },
+  "test_credentials": "Admin admin@taxmaster.pro / Admin@123 (from /app/backend/.env) — login verified working, cookie + Bearer both good.",
+  "seed_data_creation": "None. New QA users were created during pytest runs — these now populate the leaderboard (~4 rows). Not an issue but note that /api/stats shows global_learners=9, india_quiz_champs=4, total_questions=35 rather than the 'all-zeros' claim from the PRD.",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend endpoints /api/stats and /api/quiz/generate are FULLY VERIFIED (3 new pytests in /app/backend/tests/test_stats_and_quizgen.py including one real Claude Sonnet 4.5 call). Leaderboard column names and 4 stat cards render as designed. The ONE blocker is a trivial missing useState pair in IndianQuiz.jsx. After E1 adds `const [generating, setGenerating] = useState(false);` and `const [aiCount, setAiCount] = useState(0);` the /quiz page will render, and the remaining requested tests (guest quiz-gen-signin link, admin quiz-gen-more toast + pool grow + _ai badge, LB population after submit) can all be executed. All other pages verified regression-clean.",
+  "rca_of_the_issue": "REPRODUCTION: visit /quiz on preview URL as guest OR authenticated → blank white page. Console shows `PAGE ERROR: aiCount is not defined` and React warning 'An error occurred in the <IndianQuiz> component'. ROOT CAUSE: /app/frontend/src/pages/IndianQuiz.jsx lines 21-30 declare useState for [pool, idx, score, streak, best, answered, picked, confettiKey, flash] but the iteration_6 additions (Generate more with AI card + AI questions counter) reference `generating`/`setGenerating` (lines 93, 111, 212, 215) and `aiCount`/`setAiCount` (lines 105, 194) which were never declared. During initial render, `<MiniRow value={aiCount} />` and `disabled={generating}` throw ReferenceError, React unmounts the tree. MITIGATION: single 2-line change in IndianQuiz.jsx to add the two missing hooks. Not applied by this testing agent because it is a shipped functional bug (main agent scope per Fix Scope guide)."
+}
