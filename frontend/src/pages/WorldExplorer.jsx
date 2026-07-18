@@ -24,7 +24,7 @@ export default function WorldExplorer() {
   if (selected) return <CountryView country={selected} onBack={() => setSelected(null)} />;
 
   return (
-    <Layout title="World Tax Explorer" subtitle={`${countries.length} countries — search, compare, quiz yourself.`}>
+    <Layout title="World Tax Explorer 🌍" subtitle={`${countries.length} countries — search, compare, quiz yourself. Pick a flag to dive in.`}>
       <div className="tm-card p-5 sm:p-6 mb-5">
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">

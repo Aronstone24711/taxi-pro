@@ -140,7 +140,7 @@ export default function SaveSmart() {
   };
 
   return (
-    <Layout title="Save Smart" subtitle="Practical strategies + calculators to legally lower your tax">
+    <Layout title="Save Smart 💰" subtitle="Practical, legal ways to keep more of what you earn — no jargon.">
       <div className="grid lg:grid-cols-[1fr_360px] gap-6">
         <div className="space-y-5">
           {strategies.map(s => (

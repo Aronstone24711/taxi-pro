@@ -52,6 +52,8 @@ class RegisterIn(BaseModel):
     email: EmailStr
     password: str = Field(min_length=6, max_length=128)
     name: str = Field(min_length=1, max_length=60)
+    age: Optional[int] = Field(default=None, ge=10, le=120)
+    experience: Optional[str] = Field(default="beginner")  # beginner | intermediate | pro
 
 
 class LoginIn(BaseModel):
@@ -99,6 +101,8 @@ def _serialize_user(u: dict) -> dict:
         "email": u["email"],
         "name": u.get("name", ""),
         "role": u.get("role", "user"),
+        "age": u.get("age"),
+        "experience": u.get("experience", "beginner"),
         "total_score": u.get("total_score", 0),
         "best_streak": u.get("best_streak", 0),
         "current_streak": u.get("current_streak", 0),
@@ -154,11 +158,16 @@ async def register(payload: RegisterIn, response: Response):
     if await db.users.find_one({"email": email}):
         raise HTTPException(status_code=400, detail="Email already registered")
     now = datetime.now(timezone.utc).isoformat()
+    exp = (payload.experience or "beginner").lower()
+    if exp not in {"beginner", "intermediate", "pro"}:
+        exp = "beginner"
     doc = {
         "email": email,
         "password_hash": hash_password(payload.password),
         "name": payload.name.strip(),
         "role": "user",
+        "age": payload.age,
+        "experience": exp,
         "total_score": 0,
         "best_streak": 0,
         "current_streak": 0,

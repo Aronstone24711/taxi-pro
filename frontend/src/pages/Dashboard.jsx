@@ -4,14 +4,40 @@ import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import {
-  Flame, Target, Trophy, BookOpen, Award, ArrowRight
+  Flame, Target, Trophy, BookOpen, Award, ArrowRight, Sparkles
 } from "lucide-react";
+
+const greetings = ["👋 Hey", "🎯 Hi", "🚀 Welcome back", "☕ Morning", "✨ Yo"];
+const tipsByExperience = {
+  beginner: {
+    label: "Beginner mode",
+    emoji: "🌱",
+    color: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    tip: "Start with the Indian Quiz — 15 easy warm-ups. Every correct answer earns 10 points.",
+    cta: { to: "/quiz", label: "Start easy quiz" },
+  },
+  intermediate: {
+    label: "Getting there",
+    emoji: "📈",
+    color: "bg-blue-50 text-blue-700 border-blue-200",
+    tip: "Try the Save Smart calculator — plug in your income and see how much you could save this year.",
+    cta: { to: "/save-smart", label: "Open Save Smart" },
+  },
+  pro: {
+    label: "Tax pro mode",
+    emoji: "🧠",
+    color: "bg-purple-50 text-purple-700 border-purple-200",
+    tip: "Race through the World Explorer — 48 countries, per-country quizzes. See how many flags you can master.",
+    cta: { to: "/explorer", label: "Open World Explorer" },
+  },
+};
 
 export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [history, setHistory] = useState([]);
   const [achievements, setAchievements] = useState([]);
+  const [greeting] = useState(() => greetings[Math.floor(Math.random() * greetings.length)]);
 
   useEffect(() => {
     api.get("/user/history").then(({ data }) => setHistory(data.history || [])).catch(() => {});
@@ -22,9 +48,29 @@ export default function Dashboard() {
     ? Math.round((user.correct_answers / user.questions_answered) * 100)
     : 0;
   const unlocked = new Set(user?.achievements || []);
+  const persona = tipsByExperience[user?.experience || "beginner"] || tipsByExperience.beginner;
 
   return (
-    <Layout title={`Hi, ${user?.name?.split(" ")[0] || "there"} 👋`} subtitle="Your tax learning at a glance">
+    <Layout
+      title={`${greeting}, ${user?.name?.split(" ")[0] || "friend"}`}
+      subtitle="Your tax learning at a glance — pick anything below to jump back in."
+    >
+      {/* Persona banner */}
+      <div className={`mb-6 rounded-xl border p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3 ${persona.color}`} data-testid="persona-banner">
+        <div className="text-2xl leading-none">{persona.emoji}</div>
+        <div className="flex-1 min-w-0">
+          <div className="text-xs font-semibold uppercase tracking-widest opacity-70">{persona.label}</div>
+          <div className="text-sm mt-0.5">{persona.tip}</div>
+        </div>
+        <button
+          data-testid="persona-cta"
+          onClick={() => navigate(persona.cta.to)}
+          className="tm-btn-primary text-sm inline-flex items-center gap-1.5 shrink-0"
+        >
+          <Sparkles size={13} /> {persona.cta.label}
+        </button>
+      </div>
+
       {/* Stat grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard label="Total Score" value={user?.total_score ?? 0} icon={Target} accent="text-[#2563eb]" testId="stat-score" />
