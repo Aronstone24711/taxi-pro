@@ -71,6 +71,13 @@ export default function Login() {
             Create an account
           </Link>
         </div>
+        <div className="text-center text-[13px] text-slate-500 mt-3 pb-2">
+          Or{" "}
+          <Link to="/quiz" data-testid="login-guest" className="text-[#2563eb] font-semibold hover:underline">
+            continue as guest
+          </Link>
+          {" "}— no account needed.
+        </div>
         <div className="text-center text-xs text-slate-400 mt-2">
           <Link to="/" className="hover:text-slate-600">← Back to home</Link>
         </div>

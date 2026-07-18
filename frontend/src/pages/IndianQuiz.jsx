@@ -26,7 +26,7 @@ export default function IndianQuiz() {
   const [picked, setPicked] = useState(null);
   const [confettiKey, setConfettiKey] = useState(0);
   const [flash, setFlash] = useState(null); // { icon, text }
-  const { setUser } = useAuth();
+  const { setUser, user } = useAuth();
 
   useEffect(() => {
     api.get("/quiz/indian")
@@ -37,6 +37,7 @@ export default function IndianQuiz() {
   const q = pool[idx];
 
   const submitProgress = async (isCorrect, newStreak) => {
+    if (!user || user === false) return; // guest — nothing to save
     try {
       const { data } = await api.post("/quiz/submit", {
         quiz_type: "indian",
@@ -89,7 +90,12 @@ export default function IndianQuiz() {
   return (
     <Layout title="Indian Tax Quiz 🇮🇳" subtitle="Fast questions on income tax, GST & deductions — no pressure, just points.">
       <Confetti fire={confettiKey} />
-
+      {(!user || user === false) && (
+        <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50/70 p-3 text-[13px] text-blue-900 flex items-center gap-2">
+          <span>👋</span>
+          <span>You're playing as guest — your streak resets on refresh. <a href="/register" className="font-semibold underline">Create a free account</a> to save progress.</span>
+        </div>
+      )}
       <div className="grid lg:grid-cols-[1fr_280px] gap-6">
         <section className="tm-card p-6 lg:p-8 relative">
           {flash && (

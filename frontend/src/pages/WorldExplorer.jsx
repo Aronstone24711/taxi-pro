@@ -89,7 +89,7 @@ function CountryView({ country, onBack }) {
   const [score, setScore] = useState(0);
   const [answered, setAnswered] = useState(false);
   const [picked, setPicked] = useState(null);
-  const { setUser } = useAuth();
+  const { setUser, user } = useAuth();
 
   useEffect(() => { setPool(shuffle(country.quiz || [])); }, [country]);
 
@@ -101,14 +101,13 @@ function CountryView({ country, onBack }) {
     if (i === q.correct) setScore(s => s + 1);
   };
 
-  const next = async () => {
-    if (idx + 1 >= pool.length) {
-      // finalize
+  const finalize = async (finalScore) => {
+    if (user && user !== false) {
       try {
         const { data } = await api.post("/quiz/submit", {
           quiz_type: "country",
           country_key: country.key,
-          score: score + (picked === q.correct ? 0 : 0), // score already includes last if correct
+          score: finalScore,
           total: pool.length,
           streak: 0,
         });
@@ -116,15 +115,22 @@ function CountryView({ country, onBack }) {
       } catch (err) {
         console.warn("[taxquest] country quiz submit failed:", err?.message || err);
       }
-      setPhase("complete");
+    }
+    setPhase("complete");
+  };
+
+  const next = async () => {
+    if (idx + 1 >= pool.length) {
+      await finalize(score);
     } else {
-      setIdx(i => i + 1); setAnswered(false); setPicked(null);
+      setIdx((i) => i + 1); setAnswered(false); setPicked(null);
     }
   };
 
   const retry = () => {
     setPool(shuffle(country.quiz || []));
-    setIdx(0); setScore(0); setAnswered(false); setPicked(null); setPhase("intro");
+    setIdx(0); setScore(0); setAnswered(false); setPicked(null);
+    setPhase("active"); // skip intro on retry — jump straight back into the quiz
   };
 
   return (

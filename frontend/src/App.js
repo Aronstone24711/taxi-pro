@@ -25,11 +25,13 @@ function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          {/* Public — everyone can play. Signing in only saves progress + leaderboard. */}
+          <Route path="/quiz" element={<IndianQuiz />} />
+          <Route path="/explorer" element={<WorldExplorer />} />
+          <Route path="/save-smart" element={<SaveSmart />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
+          {/* Auth-only */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/quiz" element={<ProtectedRoute><IndianQuiz /></ProtectedRoute>} />
-          <Route path="/explorer" element={<ProtectedRoute><WorldExplorer /></ProtectedRoute>} />
-          <Route path="/save-smart" element={<ProtectedRoute><SaveSmart /></ProtectedRoute>} />
-          <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPanel /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

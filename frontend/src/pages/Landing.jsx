@@ -31,6 +31,7 @@ export default function Landing() {
             </div>
           </div>
           <div className="ml-auto flex items-center gap-2">
+            <button data-testid="landing-guest-btn" onClick={() => navigate("/quiz")} className="tm-btn-outline text-sm hidden sm:inline-flex">Try as guest</button>
             <button data-testid="landing-signin-btn" onClick={() => navigate("/login")} className="tm-btn-outline text-sm">Sign in</button>
             <button data-testid="landing-signup-btn" onClick={() => navigate("/register")} className="tm-btn-primary text-sm">Get started</button>
           </div>
@@ -48,14 +49,17 @@ export default function Landing() {
             Interactive quizzes, real tax data from 48+ countries, an AI tax assistant, and practical strategies to legally save more — all in one clean dashboard.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
-            <button data-testid="hero-cta-primary" onClick={() => navigate("/register")}
+            <button data-testid="hero-cta-guest" onClick={() => navigate("/quiz")}
               className="tm-btn-primary inline-flex items-center gap-2 text-[15px] px-5 py-3">
-              Start learning free <ArrowRight size={16} />
+              Try it as guest <ArrowRight size={16} />
             </button>
-            <button data-testid="hero-cta-secondary" onClick={() => navigate("/quiz")}
+            <button data-testid="hero-cta-secondary" onClick={() => navigate("/register")}
               className="tm-btn-outline text-[15px] px-5 py-3">
-              Try the quiz
+              Sign up to save progress
             </button>
+          </div>
+          <div className="mt-4 text-[12.5px] text-slate-500 max-w-lg">
+            No sign-up needed. An account is optional — it just saves your streak, unlocks achievements and puts you on the leaderboard.
           </div>
           <div className="mt-8 flex flex-wrap gap-6 text-sm text-slate-500">
             <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={14} className="text-emerald-600" /> No credit card required</span>
