@@ -46,14 +46,23 @@ async function fetchWeatherAt(lat, lon) {
 }
 
 async function ipFallback() {
-  try {
-    const r = await fetch("https://ipapi.co/json/");
-    const d = await r.json();
-    if (d?.latitude && d?.longitude) {
-      return { lat: d.latitude, lon: d.longitude, city: d.city || d.region || "" };
+  // Use a CORS-friendly endpoint to avoid red console errors in strict environments.
+  const endpoints = [
+    "https://ipwho.is/",
+    "https://get.geojs.io/v1/ip/geo.json",
+  ];
+  for (const url of endpoints) {
+    try {
+      const r = await fetch(url);
+      if (!r.ok) continue;
+      const d = await r.json();
+      const lat = d?.latitude ?? d?.lat;
+      const lon = d?.longitude ?? d?.lon ?? d?.lng;
+      const city = d?.city || d?.region || d?.country || "";
+      if (lat != null && lon != null) return { lat, lon, city };
+    } catch {
+      // try next endpoint
     }
-  } catch (err) {
-    console.warn("[taxquest] IP location fallback failed:", err?.message || err);
   }
   return null;
 }
