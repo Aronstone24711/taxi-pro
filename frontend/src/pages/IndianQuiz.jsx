@@ -27,6 +27,8 @@ export default function IndianQuiz() {
   const [picked, setPicked] = useState(null);
   const [confettiKey, setConfettiKey] = useState(0);
   const [flash, setFlash] = useState(null); // { icon, text }
+  const [aiCount, setAiCount] = useState(0);
+  const [generating, setGenerating] = useState(false);
   const { setUser, user } = useAuth();
 
   useEffect(() => {
@@ -121,7 +123,7 @@ export default function IndianQuiz() {
       {(!user || user === false) && (
         <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50/70 p-3 text-[13px] text-blue-900 flex items-center gap-2">
           <span>👋</span>
-          <span>You're playing as guest — your streak resets on refresh. <a href="/register" className="font-semibold underline">Create a free account</a> to save progress.</span>
+          <span>You&apos;re playing as guest — your streak resets on refresh. <a href="/register" className="font-semibold underline">Create a free account</a> to save progress.</span>
         </div>
       )}
       <div className="grid lg:grid-cols-[1fr_280px] gap-6">
@@ -203,7 +205,7 @@ export default function IndianQuiz() {
               <div className="text-[13px] font-semibold text-purple-900">Feeling stuck? Generate more.</div>
             </div>
             <div className="text-[12px] text-purple-800 leading-snug mb-2.5">
-              Once you've finished all built-in questions, tap below to have TaxQuest AI create <strong>5 fresh questions</strong> tailored to your level.
+              Once you&apos;ve finished all built-in questions, tap below to have TaxQuest AI create <strong>5 fresh questions</strong> tailored to your level.
             </div>
             {user && user !== false ? (
               <button
