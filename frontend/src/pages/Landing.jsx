@@ -1,13 +1,17 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { CheckCircle2, Globe2, PiggyBank, Trophy, BookOpen, Sparkles, ArrowRight } from "lucide-react";
+import WeatherBackground from "@/components/WeatherBackground";
+import Chatbot from "@/components/Chatbot";
+import {
+  CheckCircle2, Globe2, PiggyBank, Trophy, BookOpen, Sparkles, ArrowRight
+} from "lucide-react";
 
 const bullets = [
-  { icon: BookOpen, title: "Continuous Indian Quiz", text: "Master GST, income tax slabs, deductions & TDS with an endless quiz stream." },
-  { icon: Globe2,   title: "48+ Countries Explorer", text: "Compare tax systems across the world with country-specific quizzes." },
-  { icon: PiggyBank,title: "Save Smart Toolkit",     text: "Calculators, strategies and country tips to legally reduce your tax burden." },
-  { icon: Trophy,   title: "Streaks & Leaderboard",  text: "Earn achievements, climb the leaderboard and track your progress." },
+  { to: "/quiz",        icon: BookOpen,  title: "Continuous Indian Quiz", text: "GST, income tax slabs, deductions & TDS in an endless stream.",  testId: "bullet-quiz" },
+  { to: "/explorer",    icon: Globe2,    title: "48+ Countries Explorer", text: "Compare tax systems across the world with country-specific quizzes.", testId: "bullet-explorer" },
+  { to: "/save-smart",  icon: PiggyBank, title: "Save Smart Toolkit",     text: "Calculators, strategies and country tips to legally lower your tax.", testId: "bullet-savesmart" },
+  { to: "/leaderboard", icon: Trophy,    title: "Streaks & Leaderboard",  text: "Earn achievements and climb the global leaderboard — free.",         testId: "bullet-leaderboard" },
 ];
 
 export default function Landing() {
@@ -19,17 +23,24 @@ export default function Landing() {
   }, [user, navigate]);
 
   return (
-    <div className="min-h-screen bg-[#f8fafc]">
+    <div className="min-h-screen relative">
+      <WeatherBackground />
+      <Chatbot />
+
       {/* Header */}
-      <header className="border-b border-slate-200 bg-white">
+      <header className="border-b border-white/50 bg-white/60 backdrop-blur">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center">
-          <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => navigate("/")}
+            className="flex items-center gap-2.5 hover:opacity-80 transition"
+            data-testid="landing-brand"
+          >
             <div className="w-9 h-9 rounded-lg bg-[#1e3a8a] text-white grid place-items-center font-heading font-bold">T</div>
-            <div>
+            <div className="text-left">
               <div className="font-heading font-bold text-[15px] leading-none">TaxQuest</div>
               <div className="text-[11px] text-slate-500 mt-0.5 tracking-wider uppercase">LEARN · PLAY · WIN</div>
             </div>
-          </div>
+          </button>
           <div className="ml-auto flex items-center gap-2">
             <button data-testid="landing-guest-btn" onClick={() => navigate("/quiz")} className="tm-btn-outline text-sm hidden sm:inline-flex">Try as guest</button>
             <button data-testid="landing-signin-btn" onClick={() => navigate("/login")} className="tm-btn-outline text-sm">Sign in</button>
@@ -45,7 +56,7 @@ export default function Landing() {
           <h1 className="font-heading text-4xl sm:text-5xl lg:text-[3.4rem] leading-[1.05] tracking-tight text-slate-900">
             Master taxes in India<br />and around the world.
           </h1>
-          <p className="mt-5 text-slate-600 text-[17px] leading-relaxed max-w-xl">
+          <p className="mt-5 text-slate-700 text-[17px] leading-relaxed max-w-xl">
             Interactive quizzes, real tax data from 48+ countries, an AI tax assistant, and practical strategies to legally save more — all in one clean dashboard.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -58,11 +69,11 @@ export default function Landing() {
               Sign up to save progress
             </button>
           </div>
-          <div className="mt-4 text-[12.5px] text-slate-500 max-w-lg">
+          <div className="mt-4 text-[12.5px] text-slate-600 max-w-lg">
             No sign-up needed. An account is optional — it just saves your streak, unlocks achievements and puts you on the leaderboard.
           </div>
-          <div className="mt-8 flex flex-wrap gap-6 text-sm text-slate-500">
-            <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={14} className="text-emerald-600" /> No credit card required</span>
+          <div className="mt-6 flex flex-wrap gap-5 text-sm text-slate-600">
+            <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={14} className="text-emerald-600" /> No credit card</span>
             <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={14} className="text-emerald-600" /> AI tax assistant included</span>
             <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={14} className="text-emerald-600" /> 48+ countries</span>
           </div>
@@ -75,23 +86,34 @@ export default function Landing() {
             <Stat label="AI Assist" value="24/7" />
           </div>
           <div className="mt-6 space-y-3">
-            {bullets.map(({ icon: Icon, title, text }) => (
-              <div key={title} className="flex gap-3 p-3 rounded-lg border border-slate-200 hover:border-blue-300 transition">
+            {bullets.map(({ to, icon: Icon, title, text, testId }) => (
+              <button
+                key={to}
+                data-testid={testId}
+                onClick={() => navigate(to)}
+                className="w-full text-left flex gap-3 p-3 rounded-lg border border-slate-200 hover:border-blue-400 hover:bg-blue-50/40 transition group"
+              >
                 <div className="w-9 h-9 shrink-0 rounded-lg bg-blue-50 text-[#2563eb] grid place-items-center">
                   <Icon size={17} />
                 </div>
-                <div className="min-w-0">
-                  <div className="text-[14px] font-semibold text-slate-900">{title}</div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[14px] font-semibold text-slate-900 flex items-center gap-1">
+                    {title}
+                    <ArrowRight size={13} className="opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition text-[#2563eb]" />
+                  </div>
                   <div className="text-[12.5px] text-slate-500 leading-snug">{text}</div>
                 </div>
-              </div>
+              </button>
             ))}
+          </div>
+          <div className="mt-4 text-[11.5px] text-slate-500 text-center">
+            👆 Click any card — all four are fully playable, no sign-up.
           </div>
         </div>
       </section>
 
-      <footer className="border-t border-slate-200 mt-6 bg-white">
-        <div className="max-w-6xl mx-auto px-6 py-6 text-xs text-slate-500">
+      <footer className="border-t border-white/50 bg-white/60 backdrop-blur">
+        <div className="max-w-6xl mx-auto px-6 py-6 text-xs text-slate-600">
           © 2026 TaxQuest • Educational content only, not legal or financial advice.
         </div>
       </footer>
@@ -101,7 +123,7 @@ export default function Landing() {
 
 function Stat({ label, value }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4">
+    <div className="rounded-lg border border-slate-200 bg-white/70 p-4 backdrop-blur">
       <div className="font-mono text-2xl font-semibold text-slate-900">{value}</div>
       <div className="text-[11px] uppercase tracking-widest text-slate-500 mt-1">{label}</div>
     </div>

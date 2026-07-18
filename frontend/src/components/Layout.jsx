@@ -1,5 +1,6 @@
 import Sidebar from "./Sidebar";
 import Chatbot from "./Chatbot";
+import WeatherBackground from "./WeatherBackground";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Menu, X, LogOut, LogIn } from "lucide-react";
 import { useState } from "react";
@@ -19,7 +20,8 @@ export default function Layout({ children, title, subtitle }) {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex bg-[#f8fafc]">
+    <div className="min-h-screen flex">
+      <WeatherBackground />
       <Sidebar />
 
       {/* Mobile drawer */}

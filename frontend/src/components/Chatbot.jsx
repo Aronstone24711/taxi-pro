@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { MessageSquare, X, Send, Sparkles } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { MessageSquare, X, Send, Sparkles, LogIn } from "lucide-react";
 import { API_BASE, getToken } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 
@@ -12,6 +13,7 @@ const suggestions = [
 
 export default function Chatbot() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -20,15 +22,18 @@ export default function Chatbot() {
   ]);
   const [session, setSession] = useState(null);
   const scrollRef = useRef(null);
+  const isAuthed = user && user !== false;
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, busy]);
 
-  if (!user || user === false) return null;
+  // Visible for EVERYONE. If a guest tries to send, we redirect them to /login.
 
   const send = async (text) => {
     if (!text.trim() || busy) return;
+    if (!isAuthed) { navigate("/login"); return; }
+
     setBusy(true);
     setInput("");
     const userId = `u-${Date.now()}`;
@@ -49,9 +54,7 @@ export default function Chatbot() {
         credentials: "include",
         body: JSON.stringify({ message: text, session_id: session }),
       });
-      if (!res.ok || !res.body) {
-        throw new Error(`Chat failed (${res.status})`);
-      }
+      if (!res.ok || !res.body) throw new Error(`Chat failed (${res.status})`);
       const sid = res.headers.get("X-Session-Id");
       if (sid && !session) setSession(sid);
 
@@ -71,7 +74,7 @@ export default function Chatbot() {
           if (payload.startsWith("[ERROR]")) {
             setMessages((m) => {
               const copy = [...m];
-              copy[copy.length - 1] = { role: "assistant", content: "⚠️ " + payload.replace("[ERROR]", "").trim() };
+              copy[copy.length - 1] = { ...copy[copy.length - 1], content: "⚠️ " + payload.replace("[ERROR]", "").trim() };
               return copy;
             });
             continue;
@@ -79,15 +82,19 @@ export default function Chatbot() {
           const chunk = payload.replaceAll("\\n", "\n");
           setMessages((m) => {
             const copy = [...m];
-            copy[copy.length - 1] = { role: "assistant", content: (copy[copy.length - 1].content || "") + chunk };
+            copy[copy.length - 1] = {
+              ...copy[copy.length - 1],
+              content: (copy[copy.length - 1].content || "") + chunk,
+            };
             return copy;
           });
         }
       }
-    } catch (e) {
+    } catch (err) {
+      console.warn("[taxquest] chat stream failed:", err?.message || err);
       setMessages((m) => {
         const copy = [...m];
-        copy[copy.length - 1] = { role: "assistant", content: "⚠️ Couldn't reach TaxQuest AI. Please try again." };
+        copy[copy.length - 1] = { ...copy[copy.length - 1], content: "⚠️ Couldn't reach TaxQuest AI. Please try again." };
         return copy;
       });
     } finally {
@@ -97,14 +104,21 @@ export default function Chatbot() {
 
   return (
     <>
-      <button
-        onClick={() => setOpen(true)}
-        data-testid="open-chatbot-btn"
-        className={`fixed bottom-6 right-6 z-40 shadow-lg rounded-full h-14 w-14 grid place-items-center bg-[#1e3a8a] text-white hover:bg-[#1d4ed8] transition ${open ? "hidden" : ""}`}
-        aria-label="Open AI Tax Assistant"
-      >
-        <MessageSquare size={22} />
-      </button>
+      {/* Floating launcher — always visible so users can find AI easily */}
+      {!open && (
+        <button
+          onClick={() => setOpen(true)}
+          data-testid="open-chatbot-btn"
+          className="fixed bottom-6 right-6 z-40 group inline-flex items-center gap-2 pl-4 pr-5 py-3 rounded-full shadow-lg bg-[#1e3a8a] text-white hover:bg-[#1d4ed8] transition"
+          aria-label="Open AI Tax Assistant"
+        >
+          <span className="relative flex items-center justify-center">
+            <span className="absolute inset-0 rounded-full bg-white/40 animate-ping"></span>
+            <MessageSquare size={18} className="relative" />
+          </span>
+          <span className="text-sm font-semibold">Ask AI</span>
+        </button>
+      )}
 
       {open && (
         <div
@@ -122,53 +136,84 @@ export default function Chatbot() {
             </button>
           </div>
 
-          <div ref={scrollRef} className="flex-1 overflow-y-auto tm-scroll px-4 py-4 space-y-3 bg-slate-50">
-            {messages.map((m, i) => (
-              <div key={m.id || `msg-${i}`} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[85%] rounded-xl px-3 py-2 text-[13.5px] leading-relaxed whitespace-pre-wrap ${m.role === "user" ? "bg-[#2563eb] text-white" : "bg-white border border-slate-200 text-slate-800"}`}>
-                  {m.content || (busy && i === messages.length - 1 ? <span className="opacity-60">Thinking…</span> : null)}
+          {!isAuthed ? (
+            <div className="flex-1 grid place-items-center p-6 text-center bg-slate-50">
+              <div>
+                <div className="w-12 h-12 rounded-full bg-blue-100 text-[#1e3a8a] grid place-items-center mx-auto mb-3">
+                  <Sparkles size={20} />
+                </div>
+                <div className="font-heading text-base mb-1">Sign in to chat with TaxQuest AI</div>
+                <div className="text-[13px] text-slate-500 mb-4 leading-snug">
+                  The AI assistant is free — it just needs an account so we can save your chat history.
+                </div>
+                <div className="flex gap-2 justify-center">
+                  <button
+                    data-testid="chatbot-signin"
+                    onClick={() => navigate("/login")}
+                    className="tm-btn-primary inline-flex items-center gap-1.5 text-sm"
+                  >
+                    <LogIn size={14} /> Sign in
+                  </button>
+                  <button
+                    data-testid="chatbot-signup"
+                    onClick={() => navigate("/register")}
+                    className="tm-btn-outline text-sm"
+                  >
+                    Sign up free
+                  </button>
                 </div>
               </div>
-            ))}
-            {messages.length === 1 && (
-              <div className="pt-2 space-y-1.5">
-                {suggestions.map((s) => (
-                  <button
-                    key={s}
-                    data-testid={`suggest-${s.slice(0, 12)}`}
-                    onClick={() => send(s)}
-                    disabled={busy}
-                    className="w-full text-left text-[12.5px] px-3 py-2 rounded-lg bg-white border border-slate-200 hover:border-blue-400 hover:bg-blue-50 transition text-slate-700"
-                  >
-                    {s}
-                  </button>
+            </div>
+          ) : (
+            <>
+              <div ref={scrollRef} className="flex-1 overflow-y-auto tm-scroll px-4 py-4 space-y-3 bg-slate-50">
+                {messages.map((m, i) => (
+                  <div key={m.id || `msg-${i}`} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                    <div className={`max-w-[85%] rounded-xl px-3 py-2 text-[13.5px] leading-relaxed whitespace-pre-wrap ${m.role === "user" ? "bg-[#2563eb] text-white" : "bg-white border border-slate-200 text-slate-800"}`}>
+                      {m.content || (busy && i === messages.length - 1 ? <span className="opacity-60">Thinking…</span> : null)}
+                    </div>
+                  </div>
                 ))}
+                {messages.length === 1 && (
+                  <div className="pt-2 space-y-1.5">
+                    {suggestions.map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => send(s)}
+                        disabled={busy}
+                        className="w-full text-left text-[12.5px] px-3 py-2 rounded-lg bg-white border border-slate-200 hover:border-blue-400 hover:bg-blue-50 transition text-slate-700"
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
-          <form
-            onSubmit={(e) => { e.preventDefault(); send(input); }}
-            className="p-3 border-t border-slate-200 flex gap-2 bg-white"
-          >
-            <input
-              data-testid="chat-input"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder={busy ? "Please wait…" : "Ask a tax question…"}
-              disabled={busy}
-              className="tm-input flex-1"
-            />
-            <button
-              type="submit"
-              disabled={busy || !input.trim()}
-              data-testid="chat-send-btn"
-              className="tm-btn-primary px-3 grid place-items-center"
-              aria-label="Send"
-            >
-              <Send size={16} />
-            </button>
-          </form>
+              <form
+                onSubmit={(e) => { e.preventDefault(); send(input); }}
+                className="p-3 border-t border-slate-200 flex gap-2 bg-white"
+              >
+                <input
+                  data-testid="chat-input"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder={busy ? "Please wait…" : "Ask a tax question…"}
+                  disabled={busy}
+                  className="tm-input flex-1"
+                />
+                <button
+                  type="submit"
+                  disabled={busy || !input.trim()}
+                  data-testid="chat-send-btn"
+                  className="tm-btn-primary px-3 grid place-items-center"
+                  aria-label="Send"
+                >
+                  <Send size={16} />
+                </button>
+              </form>
+            </>
+          )}
         </div>
       )}
     </>
