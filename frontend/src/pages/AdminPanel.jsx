@@ -73,8 +73,8 @@ export default function AdminPanel() {
                 <td className="px-5 py-3 font-mono text-slate-600">{c.info?.corp || "—"}</td>
                 <td className="px-5 py-3 text-right font-mono">{c.quiz?.length || 0}</td>
                 <td className="px-5 py-3 text-right space-x-1.5">
-                  <button data-testid={`edit-${c.region}`} onClick={() => startEdit(c)} className="tm-btn-outline text-xs">Edit</button>
-                  <button data-testid={`delete-${c.region}`} onClick={() => remove(c)} className="tm-btn-outline text-xs text-red-600"><Trash2 size={12} /></button>
+                  <button data-testid={`edit-${encodeURIComponent(c.key)}`} onClick={() => startEdit(c)} className="tm-btn-outline text-xs">Edit</button>
+                  <button data-testid={`delete-${encodeURIComponent(c.key)}`} onClick={() => remove(c)} className="tm-btn-outline text-xs text-red-600"><Trash2 size={12} /></button>
                 </td>
               </tr>
             ))}

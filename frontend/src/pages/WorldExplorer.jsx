@@ -53,7 +53,7 @@ export default function WorldExplorer() {
         {filtered.map(c => (
           <button
             key={c.key}
-            data-testid={`country-card-${c.region}`}
+            data-testid={`country-card-${encodeURIComponent(c.key)}`}
             onClick={() => setSelected(c)}
             className="tm-card p-4 text-left hover:border-blue-400 hover:-translate-y-0.5 hover:shadow-sm transition"
           >

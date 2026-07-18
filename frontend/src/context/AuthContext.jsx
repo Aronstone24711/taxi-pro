@@ -9,8 +9,10 @@ export function AuthProvider({ children }) {
 
   const refresh = useCallback(async () => {
     try {
-      const { data } = await api.get("/auth/me");
-      setUser(data);
+      // Silent — anonymous users will get 401 which is expected.
+      const { data } = await api.get("/auth/me", { validateStatus: (s) => s < 500 });
+      if (data && data.email) setUser(data);
+      else setUser(false);
     } catch {
       setUser(false);
     }
