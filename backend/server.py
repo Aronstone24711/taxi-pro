@@ -1,4 +1,4 @@
-"""TaxMaster Pro — FastAPI backend.
+"""TaxQuest — FastAPI backend.
 
 Provides:
 - JWT auth (cookies + Bearer fallback)
@@ -43,7 +43,7 @@ mongo_url = os.environ["MONGO_URL"]
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ["DB_NAME"]]
 
-app = FastAPI(title="TaxMaster Pro API")
+app = FastAPI(title="TaxQuest API")
 api = APIRouter(prefix="/api")
 
 
@@ -143,7 +143,7 @@ def _compute_achievements(u: dict) -> list:
 # ---------- Health ----------
 @api.get("/")
 async def root():
-    return {"app": "TaxMaster Pro", "status": "ok"}
+    return {"app": "TaxQuest", "status": "ok"}
 
 
 @api.get("/achievements/list")
@@ -182,7 +182,9 @@ async def register(payload: RegisterIn, response: Response):
     refresh = create_refresh_token(uid)
     set_auth_cookies(response, access, refresh)
     doc["id"] = uid
-    return _serialize_user(doc)
+    out = _serialize_user(doc)
+    out["access_token"] = access  # Bearer fallback when cookies are blocked
+    return out
 
 
 @api.post("/auth/login")
@@ -196,7 +198,9 @@ async def login(payload: LoginIn, response: Response):
     refresh = create_refresh_token(uid)
     set_auth_cookies(response, access, refresh)
     user["id"] = uid
-    return _serialize_user(user)
+    out = _serialize_user(user)
+    out["access_token"] = access  # Bearer fallback when cookies are blocked
+    return out
 
 
 @api.post("/auth/logout")

@@ -1,4 +1,4 @@
-"""TaxMaster Pro backend regression tests.
+"""TaxQuest backend regression tests.
 
 Covers:
 - Health, auth (register/login/me/logout/refresh), invalid credentials
@@ -54,7 +54,7 @@ class TestHealth:
         r = requests.get(f"{API}/", timeout=10)
         assert r.status_code == 200
         j = r.json()
-        assert j["app"] == "TaxMaster Pro"
+        assert j["app"] == "TaxQuest"
         assert j["status"] == "ok"
 
 
@@ -327,3 +327,88 @@ class TestChat:
                     break
             assert got_data, f"No data chunks streamed. Received: {chunks[:5]}"
             assert got_done, f"Stream did not signal [DONE]. Received: {chunks[-5:]}"
+
+
+# ---------- Bearer-token fallback (cookies-blocked regression) ----------
+class TestBearerFallback:
+    """PRIMARY regression: verify Bearer token works when cookies are blocked."""
+
+    def test_login_returns_access_token_in_body(self):
+        r = requests.post(f"{API}/auth/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}, timeout=15)
+        assert r.status_code == 200
+        data = r.json()
+        assert "access_token" in data, f"login response missing access_token: {data.keys()}"
+        assert isinstance(data["access_token"], str) and len(data["access_token"]) > 20
+
+    def test_register_returns_access_token_in_body(self):
+        ts = int(time.time() * 1000)
+        r = requests.post(
+            f"{API}/auth/register",
+            json={"email": f"bear+{ts}@test.com", "password": "TestPass1", "name": f"Bear {ts}"},
+            timeout=15,
+        )
+        assert r.status_code == 200
+        data = r.json()
+        assert "access_token" in data
+        assert isinstance(data["access_token"], str) and len(data["access_token"]) > 20
+
+    def test_me_with_only_bearer_no_cookies(self):
+        # Get token from login (fresh, no session/cookies used)
+        r = requests.post(f"{API}/auth/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}, timeout=15)
+        assert r.status_code == 200
+        token = r.json()["access_token"]
+        # Now hit /auth/me with only Authorization header, no cookies
+        me = requests.get(
+            f"{API}/auth/me",
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=10,
+        )
+        assert me.status_code == 200, me.text
+        assert me.json()["email"] == ADMIN_EMAIL
+        assert me.json()["role"] == "admin"
+
+    def test_me_with_invalid_bearer_returns_401(self):
+        me = requests.get(
+            f"{API}/auth/me",
+            headers={"Authorization": "Bearer not-a-real-token"},
+            timeout=10,
+        )
+        assert me.status_code == 401
+
+    def test_quiz_submit_with_only_bearer(self):
+        # Register fresh user, extract token, then submit with only Authorization header
+        ts = int(time.time() * 1000)
+        email = f"bqs+{ts}@test.com"
+        r = requests.post(
+            f"{API}/auth/register",
+            json={"email": email, "password": "TestPass1", "name": f"BQ {ts}"},
+            timeout=15,
+        )
+        assert r.status_code == 200
+        token = r.json()["access_token"]
+
+        # Submit quiz with only Bearer header (no cookies)
+        sub = requests.post(
+            f"{API}/quiz/submit",
+            json={"quiz_type": "indian", "score": 8, "total": 10, "streak": 5},
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=15,
+        )
+        assert sub.status_code == 200, sub.text
+        data = sub.json()
+        assert data["total_score"] == 80  # 8 correct * 10
+        assert data["best_streak"] == 5
+        assert data["questions_answered"] == 10
+        assert data["correct_answers"] == 8
+        assert "streak_5" in data["achievements"]
+        assert "first_step" in data["achievements"]
+
+        # Verify persistence via /me with the same token
+        me = requests.get(
+            f"{API}/auth/me",
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=10,
+        )
+        assert me.status_code == 200
+        assert me.json()["total_score"] == 80
+        assert me.json()["email"] == email

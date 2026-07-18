@@ -95,7 +95,7 @@ export default function SaveSmart() {
   };
 
   const copyChecklist = async () => {
-    const text = `📋 TaxMaster Pro — Tax Season Checklist
+    const text = `📋 TaxQuest — Tax Season Checklist
 ✓ Gather income statements (salary, interest, rent)
 ✓ Collect investment proofs (80C, 80D, HSA, ISA, etc.)
 ✓ Save rent receipts & HRA declaration
@@ -108,7 +108,7 @@ export default function SaveSmart() {
 
   const downloadReport = () => {
     const lines = [
-      "TaxMaster Pro — Tax-Saving Report",
+      "TaxQuest — Tax-Saving Report",
       "=================================",
       "",
       "India (New Regime) estimator",

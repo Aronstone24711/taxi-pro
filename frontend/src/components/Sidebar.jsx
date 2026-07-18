@@ -30,8 +30,8 @@ export default function Sidebar() {
             T
           </div>
           <div>
-            <div className="font-heading font-bold text-[15px] leading-none">TaxMaster</div>
-            <div className="text-[11px] text-slate-500 mt-0.5 tracking-wider uppercase">Pro Edition</div>
+            <div className="font-heading font-bold text-[15px] leading-none">TaxQuest</div>
+            <div className="text-[11px] text-slate-500 mt-0.5 tracking-wider uppercase">LEARN · PLAY · WIN</div>
           </div>
         </div>
       </div>

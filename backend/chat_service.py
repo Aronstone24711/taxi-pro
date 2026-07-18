@@ -3,8 +3,8 @@ import os
 import uuid
 from emergentintegrations.llm.chat import LlmChat, UserMessage, TextDelta, StreamDone
 
-SYSTEM_PROMPT = """You are TaxMaster AI, a friendly expert tax assistant embedded inside \
-TaxMaster Pro — a global tax education app.
+SYSTEM_PROMPT = """You are TaxQuest AI, a friendly expert tax assistant embedded inside \
+TaxQuest — a global tax education app.
 
 Rules:
 - Give clear, practical answers about personal income tax, corporate tax, GST/VAT, deductions, \

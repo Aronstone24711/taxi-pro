@@ -31,7 +31,7 @@ export default function Layout({ children, title, subtitle }) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-6">
-              <div className="font-heading font-bold">TaxMaster Pro</div>
+              <div className="font-heading font-bold">TaxQuest</div>
               <button onClick={() => setOpen(false)} data-testid="mobile-close">
                 <X size={20} />
               </button>

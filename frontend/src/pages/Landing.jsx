@@ -26,8 +26,8 @@ export default function Landing() {
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-lg bg-[#1e3a8a] text-white grid place-items-center font-heading font-bold">T</div>
             <div>
-              <div className="font-heading font-bold text-[15px] leading-none">TaxMaster</div>
-              <div className="text-[11px] text-slate-500 mt-0.5 tracking-wider uppercase">Pro Edition</div>
+              <div className="font-heading font-bold text-[15px] leading-none">TaxQuest</div>
+              <div className="text-[11px] text-slate-500 mt-0.5 tracking-wider uppercase">LEARN · PLAY · WIN</div>
             </div>
           </div>
           <div className="ml-auto flex items-center gap-2">
@@ -88,7 +88,7 @@ export default function Landing() {
 
       <footer className="border-t border-slate-200 mt-6 bg-white">
         <div className="max-w-6xl mx-auto px-6 py-6 text-xs text-slate-500">
-          © 2026 TaxMaster Pro • Educational content only, not legal or financial advice.
+          © 2026 TaxQuest • Educational content only, not legal or financial advice.
         </div>
       </footer>
     </div>

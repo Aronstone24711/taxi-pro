@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { MessageSquare, X, Send, Sparkles } from "lucide-react";
-import { API_BASE } from "@/lib/api";
+import { API_BASE, getToken } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 
 const suggestions = [
@@ -16,7 +16,7 @@ export default function Chatbot() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [messages, setMessages] = useState([
-    { role: "assistant", content: "Hi! I'm TaxMaster AI. Ask me anything about taxes, deductions, or filing." },
+    { role: "assistant", content: "Hi! I'm TaxQuest AI. Ask me anything about taxes, deductions, or filing." },
   ]);
   const [session, setSession] = useState(null);
   const scrollRef = useRef(null);
@@ -33,9 +33,13 @@ export default function Chatbot() {
     setInput("");
     setMessages((m) => [...m, { role: "user", content: text }, { role: "assistant", content: "" }]);
     try {
+      const token = getToken();
       const res = await fetch(`${API_BASE}/chat/stream`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         credentials: "include",
         body: JSON.stringify({ message: text, session_id: session }),
       });
@@ -77,7 +81,7 @@ export default function Chatbot() {
     } catch (e) {
       setMessages((m) => {
         const copy = [...m];
-        copy[copy.length - 1] = { role: "assistant", content: "⚠️ Couldn't reach TaxMaster AI. Please try again." };
+        copy[copy.length - 1] = { role: "assistant", content: "⚠️ Couldn't reach TaxQuest AI. Please try again." };
         return copy;
       });
     } finally {
@@ -104,7 +108,7 @@ export default function Chatbot() {
           <div className="bg-[#1e3a8a] text-white px-4 py-3 flex items-center gap-2">
             <Sparkles size={16} />
             <div className="flex-1">
-              <div className="font-heading font-semibold text-sm leading-none">TaxMaster AI</div>
+              <div className="font-heading font-semibold text-sm leading-none">TaxQuest AI</div>
               <div className="text-[11px] opacity-80 mt-0.5">Powered by Claude Sonnet 4.5</div>
             </div>
             <button onClick={() => setOpen(false)} data-testid="close-chatbot" aria-label="Close">
