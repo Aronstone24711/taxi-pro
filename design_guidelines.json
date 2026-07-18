@@ -1,0 +1,130 @@
+{
+  "theme": "light",
+  "typography": {
+    "headings": {
+      "font_family": "Chivo",
+      "weights": ["400", "700"],
+      "usage": "Use for all main section headers, hero titles, and large numbers.",
+      "scales": {
+        "h1": "text-4xl sm:text-5xl tracking-tight",
+        "h2": "text-2xl sm:text-3xl tracking-tight",
+        "h3": "text-xl sm:text-2xl tracking-tight"
+      }
+    },
+    "body": {
+      "font_family": "Inter",
+      "weights": ["400", "500"],
+      "usage": "Use for all paragraph text, descriptions, and UI controls.",
+      "scales": {
+        "base": "text-base leading-relaxed",
+        "small": "text-sm leading-normal",
+        "xs": "text-xs uppercase tracking-[0.2em]"
+      }
+    },
+    "mono": {
+      "font_family": "IBM Plex Mono",
+      "weights": ["400", "600"],
+      "usage": "Use exclusively for tax amounts, numbers, leaderboard scores, and calculator outputs."
+    }
+  },
+  "colors": {
+    "primary": {
+      "DEFAULT": "#2563eb",
+      "hover": "#1d4ed8",
+      "foreground": "#ffffff"
+    },
+    "dark": {
+      "DEFAULT": "#1e3a8a",
+      "foreground": "#ffffff"
+    },
+    "background": {
+      "app": "#f8fafc",
+      "card": "#ffffff"
+    },
+    "border": {
+      "DEFAULT": "#e2e8f0",
+      "subtle": "#f1f5f9"
+    },
+    "accent": {
+      "success": "#10b981",
+      "info": "#0ea5e9",
+      "warning": "#f59e0b"
+    },
+    "text": {
+      "primary": "#0f172a",
+      "secondary": "#475569",
+      "muted": "#64748b"
+    }
+  },
+  "visual_enhancers": {
+    "surface_strategy": "Flat Data-Dense Cards. Absolutely no heavy box-shadows. Use a crisp 1px border (#e2e8f0) with pure white backgrounds (#ffffff).",
+    "borders": "rounded-lg or rounded-md for a structured, professional corporate feel. Do not use extreme pill shapes for cards.",
+    "hover_effects": "Subtle translation (-translate-y-[2px]) and shadow-sm for interactive cards. Strict color contrast for text on hover.",
+    "accents": "Use 2px left-border highlights using primary color for active states in sidebars or lists."
+  },
+  "component_patterns": {
+    "navigation": "Collapsible left-sidebar (240px width) containing navigation links, user profile snippet, and theme toggle. Maintains vertical scaling for dashboard modules.",
+    "data_cards": "Bento-style summary cards at the top of the dashboard. Pure white, 1px border, single key metric (using IBM Plex Mono) with a trend indicator.",
+    "forms_calculators": "Use Shadcn pure HTML+Tailwind forms. Inputs must have clear borders, focus:ring-1 focus:ring-blue-600. No floating labels, use explicit uppercase tracking-wide labels.",
+    "chatbot": "Floating bottom-right widget. Professional dark blue (#1e3a8a) header, white message body.",
+    "leaderboard": "High-density table layout. Rows should have hover:bg-slate-50. Highlight the top 3 rows with subtle background tints.",
+    "quiz_interface": "Clean, distraction-free center container (max-w-2xl). Progress bar at the top."
+  },
+  "grids_and_layouts": {
+    "dashboard_grid": "grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6. Summary widgets span 1 col, main chart/table spans 2-3 cols.",
+    "spacing": "Generous internal padding for containers (p-6 or p-8). Maintain strict optical alignment for numerical columns (right-aligned).",
+    "page_structure": "Left sidebar (fixed), main content area (scrollable) with a sticky top header for breadcrumbs and page title."
+  },
+  "motion": {
+    "transitions": "Fast and purposeful. 150ms ease-in-out for hover states. No dramatic entry animations that slow down the user.",
+    "loaders": "Minimalist CSS spinners or skeleton loaders (bg-slate-200 animate-pulse) for data tables."
+  },
+  "accessibility": {
+    "contrast": "Strict WCAG AA adherence. Grey text must be at least text-slate-500. Buttons must have explicit hover focus states.",
+    "testing": "All interactive elements must have data-testid attributes (e.g., data-testid='quiz-start-button', data-testid='calc-submit').",
+    "screen_readers": "Aria-labels on icon-only buttons (like the sidebar toggle)."
+  },
+  "media": {
+    "image_urls": {
+      "landing_hero": {
+        "url": "https://images.unsplash.com/photo-1707157284454-553ef0a4ed0d",
+        "description": "Office desk with smartphone and financial charts. Use with a subtle gradient overlay to ensure text contrast."
+      },
+      "world_explorer_bg": {
+        "url": "https://images.unsplash.com/photo-1569997768068-4dc032f4c509",
+        "description": "Gray minimalist world map. Use as a low-opacity background for the World Tax Explorer section."
+      },
+      "calculator_section": {
+        "url": "https://images.pexels.com/photos/4386366/pexels-photo-4386366.jpeg",
+        "description": "Calculator and notepad placed over dollar bills. Use as a header image or side-column image for the Save Smart calculators."
+      },
+      "leaderboard_iconography": {
+        "url": "https://images.unsplash.com/photo-1775210193745-af084b85675f",
+        "description": "Minimalist medal/achievement photo for the leaderboard header or empty state."
+      }
+    }
+  },
+  "libraries": {
+    "icons": "lucide-react for all UI iconography.",
+    "charts": "recharts or Shadcn charts for dashboard analytics. Use corporate blue colors for bars/lines.",
+    "3d_animations": "NONE. The user specifically requested 'normal and not like something very bulky or flashy'. Stick to clean 2D components.",
+    "notifications": "sonner for toast notifications."
+  },
+  "instructions_to_main_agent": [
+    "Prioritize a clean, corporate dashboard structure over creative landing pages.",
+    "Do NOT use extreme gradients or 3D effects. Rely entirely on precise typography, grid alignments, and high-quality whitespace.",
+    "Implement the 'Chivo' font for headers to create an 'Old Money Tech' authoritative feel, while keeping 'Inter' for highly readable data and body text.",
+    "Use 'IBM Plex Mono' for all numerical data points inside tables and summary cards.",
+    "For the World Tax Explorer, render a clean card-based grid (flags, country names, basic stats) rather than an interactive 3D globe to adhere to the 'not bulky/flashy' constraint.",
+    "Build a robust sidebar navigation (dashboard, world explorer, save smart, leaderboard, admin panel).",
+    "Ensure all Shadcn components (buttons, inputs) override standard styles to match the #2563eb / #1e3a8a palette."
+  ],
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "Do not center align the app container. Maintain a left-to-right reading flow.",
+    "Always use modern button styles (sharp or slightly rounded max 6px) with clear hover state contrast.",
+    "Never use AI assistant Emoji characters (🤖🧠💭💡🔮) for icons.",
+    "Use 2-3x more spacing (p-6, p-8) to make the data feel auditable rather than cramped.",
+    "Ensure no purely transparent backgrounds behind text. Use pure white (#ffffff) cards over the light slate background (#f8fafc).",
+    "Add 'data-testid' to all buttons, inputs, and interactive components."
+  ]
+}
