@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
-import { api } from "@/lib/api";
+import { api, devWarn } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import {
@@ -42,10 +42,10 @@ export default function Dashboard() {
   useEffect(() => {
     api.get("/user/history")
       .then(({ data }) => setHistory(data.history || []))
-      .catch((err) => console.warn("[taxquest] load history failed:", err?.message || err));
+      .catch((err) => devWarn("[taxquest] load history failed:", err?.message || err));
     api.get("/achievements/list")
       .then(({ data }) => setAchievements(data.achievements || []))
-      .catch((err) => console.warn("[taxquest] load achievements failed:", err?.message || err));
+      .catch((err) => devWarn("[taxquest] load achievements failed:", err?.message || err));
   }, []);
 
   const accuracy = user?.questions_answered

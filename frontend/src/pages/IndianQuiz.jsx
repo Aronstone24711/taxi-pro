@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
 import Confetti from "@/components/Confetti";
-import { api, formatApiError } from "@/lib/api";
+import { api, formatApiError, devWarn } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { RotateCcw, Flame, Target, Zap, Sparkles, LogIn } from "lucide-react";
@@ -34,7 +34,7 @@ export default function IndianQuiz() {
   useEffect(() => {
     api.get("/quiz/indian")
       .then(({ data }) => setPool(shuffle(data.quiz)))
-      .catch((err) => console.warn("[taxquest] load Indian quiz failed:", err?.message || err));
+      .catch((err) => devWarn("[taxquest] load Indian quiz failed:", err?.message || err));
   }, []);
 
   const q = pool[idx];
@@ -50,7 +50,7 @@ export default function IndianQuiz() {
       });
       setUser(data);
     } catch (err) {
-      console.warn("[taxquest] submit progress failed:", err?.message || err);
+      devWarn("[taxquest] submit progress failed:", err?.message || err);
     }
   };
 

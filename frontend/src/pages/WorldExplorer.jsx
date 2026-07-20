@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Layout from "@/components/Layout";
-import { api } from "@/lib/api";
+import { api, devWarn } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { Search, ArrowLeft, Play, RotateCcw, CheckCircle2 } from "lucide-react";
 
@@ -13,7 +13,7 @@ export default function WorldExplorer() {
   useEffect(() => {
     api.get("/countries")
       .then(({ data }) => setCountries(data.countries || []))
-      .catch((err) => console.warn("[taxquest] load countries failed:", err?.message || err));
+      .catch((err) => devWarn("[taxquest] load countries failed:", err?.message || err));
   }, []);
 
   const regions = useMemo(() => Array.from(new Set(countries.map(c => c.region).filter(Boolean))).sort(), [countries]);
@@ -113,7 +113,7 @@ function CountryView({ country, onBack }) {
         });
         setUser(data);
       } catch (err) {
-        console.warn("[taxquest] country quiz submit failed:", err?.message || err);
+        devWarn("[taxquest] country quiz submit failed:", err?.message || err);
       }
     }
     setPhase("complete");

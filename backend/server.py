@@ -438,6 +438,7 @@ async def chat_stream(payload: ChatIn, user: dict = Depends(current_user)):
 async def quiz_generate(payload: QuizGenIn, user: dict = Depends(current_user)):
     """Generate fresh quiz questions on-demand using Claude Sonnet 4.5.
     Requires auth (LLM costs). Returns up to 8 validated questions."""
+    questions: list = []
     try:
         questions = await generate_questions(payload.topic, payload.level or "beginner", payload.count or 5)
     except Exception as e:

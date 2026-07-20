@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
-import { api, formatApiError, setToken, getToken } from "@/lib/api";
+import { api, formatApiError, setToken, getToken, devWarn } from "@/lib/api";
 
 const AuthContext = createContext(null);
 
@@ -23,7 +23,7 @@ export function AuthProvider({ children }) {
       }
     } catch (err) {
       // Network/timeout — clear stale token and drop to logged-out state.
-      console.warn("[taxquest] /auth/me failed:", err?.message || err);
+      devWarn("[taxquest] /auth/me failed:", err?.message || err);
       setToken(null);
       setUser(false);
     }
@@ -40,7 +40,7 @@ export function AuthProvider({ children }) {
       return { ok: true };
     } catch (e) {
       const msg = formatApiError(e);
-      console.warn("[taxquest] login failed:", msg);
+      devWarn("[taxquest] login failed:", msg);
       setError(msg);
       return { ok: false, error: msg };
     }
@@ -55,7 +55,7 @@ export function AuthProvider({ children }) {
       return { ok: true };
     } catch (e) {
       const msg = formatApiError(e);
-      console.warn("[taxquest] register failed:", msg);
+      devWarn("[taxquest] register failed:", msg);
       setError(msg);
       return { ok: false, error: msg };
     }
@@ -65,7 +65,7 @@ export function AuthProvider({ children }) {
     try {
       await api.post("/auth/logout");
     } catch (err) {
-      console.warn("[taxquest] logout API failed (ignored):", err?.message || err);
+      devWarn("[taxquest] logout API failed (ignored):", err?.message || err);
     }
     setToken(null);
     setUser(false);

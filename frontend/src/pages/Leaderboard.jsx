@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
-import { api } from "@/lib/api";
+import { api, devWarn } from "@/lib/api";
 import { Medal, Trophy, Flame, Users, Globe2, BookOpen, Target } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
@@ -16,7 +16,7 @@ export default function Leaderboard() {
       api.get("/stats").then(({ data }) => data).catch(() => null),
     ])
       .then(([lb, s]) => { setRows(lb); setStats(s); })
-      .catch((err) => console.warn("[taxquest] leaderboard load failed:", err?.message || err))
+      .catch((err) => devWarn("[taxquest] leaderboard load failed:", err?.message || err))
       .finally(() => setLoading(false));
   }, []);
 
@@ -73,19 +73,17 @@ export default function Leaderboard() {
               <tbody>
                 {rows.map((r) => {
                   const isMe = user && user !== false && r.name === user.name;
-                  const rankBg =
-                    r.rank === 1 ? "bg-amber-50" :
-                    r.rank === 2 ? "bg-slate-100/70" :
-                    r.rank === 3 ? "bg-orange-50" : "";
                   return (
                     <tr
                       key={`${r.name}-${r.rank}`}
                       data-testid={`lb-row-${r.rank}`}
-                      className={`border-t border-slate-100 hover:bg-slate-50/70 ${rankBg} ${isMe ? "bg-blue-50/40" : ""}`}
+                      className={`border-t border-slate-100 hover:bg-slate-50/70 ${rankRowBg(r.rank)} ${isMe ? "bg-blue-50/40" : ""}`}
                     >
                       <td className="px-6 py-3">
                         <div className="flex items-center gap-2">
-                          {r.rank <= 3 ? <Medal size={14} className={r.rank === 1 ? "text-amber-500" : r.rank === 2 ? "text-slate-400" : "text-orange-500"} /> : <span className="w-3.5" />}
+                          {r.rank <= 3
+                            ? <Medal size={14} className={medalColor(r.rank)} />
+                            : <span className="w-3.5" />}
                           <span className="font-mono font-semibold text-slate-800">#{r.rank}</span>
                         </div>
                       </td>
@@ -124,4 +122,18 @@ function StatBox({ label, value, icon: Icon, accent, testId, hint }) {
       <div className="text-[11px] uppercase tracking-widest text-slate-500 mt-1">{label}</div>
     </div>
   );
+}
+
+// Helpers extracted to avoid nested ternaries in JSX.
+function rankRowBg(rank) {
+  if (rank === 1) return "bg-amber-50";
+  if (rank === 2) return "bg-slate-100/70";
+  if (rank === 3) return "bg-orange-50";
+  return "";
+}
+
+function medalColor(rank) {
+  if (rank === 1) return "text-amber-500";
+  if (rank === 2) return "text-slate-400";
+  return "text-orange-500";
 }

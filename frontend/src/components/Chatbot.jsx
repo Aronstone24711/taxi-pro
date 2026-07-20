@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MessageSquare, X, Send, Sparkles, LogIn } from "lucide-react";
-import { API_BASE, getToken } from "@/lib/api";
+import { API_BASE, getToken, devWarn } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 
 const suggestions = [
@@ -91,7 +91,7 @@ export default function Chatbot() {
         }
       }
     } catch (err) {
-      console.warn("[taxquest] chat stream failed:", err?.message || err);
+      devWarn("[taxquest] chat stream failed:", err?.message || err);
       setMessages((m) => {
         const copy = [...m];
         copy[copy.length - 1] = { ...copy[copy.length - 1], content: "⚠️ Couldn't reach TaxQuest AI. Please try again." };

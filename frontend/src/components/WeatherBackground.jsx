@@ -1,3 +1,4 @@
+import { devWarn } from "@/lib/api";
 import { useEffect, useState } from "react";
 
 // Gradients (top → bottom). Warmer palettes = better vibe.
@@ -60,8 +61,8 @@ async function ipFallback() {
       const lon = d?.longitude ?? d?.lon ?? d?.lng;
       const city = d?.city || d?.region || d?.country || "";
       if (lat != null && lon != null) return { lat, lon, city };
-    } catch {
-      // try next endpoint
+    } catch (err) {
+      devWarn(`[taxquest] IP fallback ${url} failed:`, err?.message || err);
     }
   }
   return null;
@@ -84,7 +85,7 @@ export function useWeatherBackground() {
         const key = pickGradient(code, isDay, hour);
         setState({ key, label: LABELS[key], temp, city });
       } catch (err) {
-        console.warn("[taxquest] weather fetch failed:", err?.message || err);
+        devWarn("[taxquest] weather fetch failed:", err?.message || err);
       }
     }
 
